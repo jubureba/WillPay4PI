@@ -1,0 +1,184 @@
+<h1>Will Pay 4 PI</h1>
+
+<p><strong>Automatic Power Infusion requesting for the shameless DPS player.</strong></p>
+
+<p>Stop begging in chat. Let the addon do it for you — with dignity. Well, some dignity.</p>
+
+<hr>
+
+<h2>What Does It Do?</h2>
+
+<ol>
+<li>You pop your burst cooldown (Metamorphosis, Combustion, Recklessness, etc.)</li>
+<li>The addon instantly whispers your priest: <em>"PI please - DEVOUR bursting"</em></li>
+<li>You get PI. You do big deeps. Everyone is happy.</li>
+</ol>
+
+<p>That's it. That's the addon.</p>
+
+<hr>
+
+<h2>Key Features</h2>
+
+<ul>
+<li><strong>Auto-detects your burst CDs</strong> — Works out of the box for 11 specs</li>
+<li><strong>Smart priest targeting</strong> — Tracks all priests in group, auto-failover if one dies</li>
+<li><strong>Customizable messages</strong> — Use variables like {spec}, {priest}, {time}</li>
+<li><strong>Multiple channels</strong> — Whisper, Party, Raid, Say, Yell</li>
+<li><strong>Cooldown protection</strong> — Won't spam your priest (configurable 15s-300s)</li>
+<li><strong>PI received tracking</strong> — Knows when you actually get PI</li>
+<li><strong>Full statistics</strong> — Success rate, response times, history</li>
+<li><strong>Modern dark UI</strong> — Purple accent, card-based, sidebar navigation</li>
+<li><strong>WeakAuras events</strong> — Hook into PI_BURST, PI_RECEIVED for custom triggers</li>
+<li><strong>Midnight 12.x native</strong> — No CLEU, no taint, fully compatible</li>
+</ul>
+
+<hr>
+
+<h2>Screenshots</h2>
+
+<h3>Dashboard — Your PI command center</h3>
+<p><img src="https://i.imgur.com/PLACEHOLDER_DASHBOARD.png" alt="Dashboard"></p>
+
+<h3>Priests — Track and prioritize your PI suppliers</h3>
+<p><img src="https://i.imgur.com/PLACEHOLDER_PRIESTS.png" alt="Priests"></p>
+
+<h3>Burst — Configure which spells trigger requests</h3>
+<p><img src="https://i.imgur.com/PLACEHOLDER_BURST.png" alt="Burst"></p>
+
+<h3>Messages — Craft the perfect PI plea</h3>
+<p><img src="https://i.imgur.com/PLACEHOLDER_MESSAGES.png" alt="Messages"></p>
+
+<h3>Statistics — Know your PI success rate</h3>
+<p><img src="https://i.imgur.com/PLACEHOLDER_STATS.png" alt="Statistics"></p>
+
+<hr>
+
+<h2>Quick Start</h2>
+
+<ol>
+<li>Install and <code>/reload</code></li>
+<li>Join a group with a Priest</li>
+<li>Type <code>/pi</code> to open</li>
+<li>Your spec's burst spells are pre-loaded</li>
+<li>Priest is auto-detected and selected</li>
+<li>Burst away — the addon handles the rest</li>
+</ol>
+
+<hr>
+
+<h2>Slash Commands</h2>
+
+<table>
+<thead>
+<tr><th>Command</th><th>Action</th></tr>
+</thead>
+<tbody>
+<tr><td><code>/pi</code></td><td>Open/close the main window</td></tr>
+<tr><td><code>/wp4pi</code></td><td>Same thing, alternate command</td></tr>
+<tr><td><code>/pi test</code></td><td>Simulate a burst (no message sent)</td></tr>
+<tr><td><code>/pi snoop</code></td><td>Debug: watch spell events for 10 seconds</td></tr>
+<tr><td><code>/pi status</code></td><td>Print current state to chat</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2>Supported Specs (Pre-configured)</h2>
+
+<table>
+<thead>
+<tr><th>Class</th><th>Specs</th></tr>
+</thead>
+<tbody>
+<tr><td>Demon Hunter</td><td>Devour (new!), Havoc, Vengeance</td></tr>
+<tr><td>Warrior</td><td>Fury, Arms</td></tr>
+<tr><td>Mage</td><td>Fire, Frost</td></tr>
+<tr><td>Hunter</td><td>Beast Mastery, Marksmanship</td></tr>
+<tr><td>Rogue</td><td>Assassination, Outlaw, Subtlety</td></tr>
+</tbody>
+</table>
+
+<p><em>Any spec can be configured by adding custom spell IDs in the Burst tab.</em></p>
+
+<hr>
+
+<h2>Message Template Variables</h2>
+
+<table>
+<thead>
+<tr><th>Variable</th><th>Output</th></tr>
+</thead>
+<tbody>
+<tr><td><code>{player}</code></td><td>Your character name</td></tr>
+<tr><td><code>{spec}</code></td><td>Your current spec</td></tr>
+<tr><td><code>{class}</code></td><td>Your class</td></tr>
+<tr><td><code>{priest}</code></td><td>Selected priest name</td></tr>
+<tr><td><code>{instance}</code></td><td>Current instance/zone</td></tr>
+<tr><td><code>{group}</code></td><td>Group type (Solo/Party/Raid)</td></tr>
+<tr><td><code>{time}</code></td><td>Current time (HH:MM)</td></tr>
+</tbody>
+</table>
+
+<h3>Example Messages</h3>
+
+<pre><code>PI please - {spec} bursting
+→ "PI please - DEVOUR bursting"
+
+will pay 4 PI, am desperate
+→ "will pay 4 PI, am desperate"
+
+Burst active, PI me ({time})
+→ "Burst active, PI me (21:35)"
+</code></pre>
+
+<hr>
+
+<h2>WeakAuras Integration</h2>
+
+<p>The addon fires custom events you can use as WeakAura triggers:</p>
+
+<table>
+<thead>
+<tr><th>Event</th><th>Payload</th><th>When</th></tr>
+</thead>
+<tbody>
+<tr><td><code>PI_BURST</code></td><td>spellID, spellName</td><td>Burst cooldown detected</td></tr>
+<tr><td><code>PI_RECEIVED</code></td><td>sourceName</td><td>Power Infusion applied to you</td></tr>
+<tr><td><code>PI_REQUESTED</code></td><td>priestName, message</td><td>PI request message sent</td></tr>
+<tr><td><code>PI_FAILED</code></td><td>reason</td><td>Request blocked (cooldown, no priest)</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2>Technical Info</h2>
+
+<ul>
+<li><strong>Interface</strong>: 120005 (Midnight 12.0.5)</li>
+<li><strong>SavedVariables</strong>: WillPay4PIDB</li>
+<li><strong>Memory</strong>: ~200KB</li>
+<li><strong>Dependencies</strong>: None (all libraries embedded)</li>
+<li><strong>Taint-free</strong>: Uses UNIT_SPELLCAST_SUCCEEDED + C_UnitAuras (safe in Midnight)</li>
+<li><strong>No CLEU</strong>: COMBAT_LOG_EVENT_UNFILTERED is not used (blocked in 12.x)</li>
+</ul>
+
+<hr>
+
+<h2>FAQ</h2>
+
+<p><strong>It's not detecting my burst!</strong><br>
+Run <code>/pi snoop</code>, cast your spell, check if the ID shows up. If not, add it manually in the Burst tab.</p>
+
+<p><strong>No priest showing up?</strong><br>
+You need to be in a group/raid with at least one Priest class player.</p>
+
+<p><strong>Does it work in rated PvP?</strong><br>
+Detection and alerts work, but Blizzard blocks addon chat messages in rated content.</p>
+
+<p><strong>My old PI Assistant settings are gone!</strong><br>
+The SavedVariables name changed from PIAssistantDB to WillPay4PIDB. Reconfigure in the new UI — it's fast.</p>
+
+<hr>
+
+<p><em>If a priest gives you PI because of this addon, you owe them a cookie.</em></p>
