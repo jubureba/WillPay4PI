@@ -1,0 +1,25 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# WoW runtime files (never commit these)
+*.bak
+*.orig
+
+# Packager output
+.release/
+.pkgmeta
+*.zip
+
+# Dev notes
+TODO.md
+NOTES.md
+dev/

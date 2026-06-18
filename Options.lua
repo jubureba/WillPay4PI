@@ -202,13 +202,13 @@ function PA:GetOptionsTable()
                     },
                     cooldown = {
                         name  = L["MSG_COOLDOWN"],
-                        desc  = "Minimum seconds between automatic PI requests.",
+                        desc  = "Minimum seconds between automatic PI requests. PI has a 2 minute cooldown, so 90s+ is recommended.",
                         type  = "select",
                         order = 3,
                         values = {
-                            [15]  = "15s",  [30]  = "30s",  [45]  = "45s",
-                            [60]  = "60s",  [90]  = "90s",  [120] = "120s",
-                            [180] = "180s", [300] = "300s",
+                            [90]  = "1m 30s", [105] = "1m 45s",
+                            [120] = "2m",     [150] = "2m 30s",
+                            [180] = "3m",
                         },
                         get   = function() return PA.db.profile.message.cooldown end,
                         set   = function(_, v) PA.db.profile.message.cooldown = v end,

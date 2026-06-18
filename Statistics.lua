@@ -167,7 +167,7 @@ function PA:ResetStatistics()
     self.sessionFailed    = 0
     self.pendingBurstTime = nil
 
-    self:Print("PI Assistant: Statistics reset.")
+    self:Print("Statistics reset.")
 end
 
 -- ─── Format Helpers ───────────────────────────────────────────────────────────

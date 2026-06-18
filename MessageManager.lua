@@ -83,7 +83,7 @@ function PA:SendPIRequest(manual)
         end
 
         if self.mainFrame and self.mainFrame:IsShown() then
-            self:RefreshDashboard()
+            self:RefreshMainWindow()
         end
 
         return true

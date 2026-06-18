@@ -342,6 +342,17 @@ function PA:CreateMainWindow()
     self:BuildAlertsTab(frame.tabPanels[TAB_ALERTS])
 
     self:SelectTab(TAB_DASHBOARD)
+
+    -- Live refresh ticker: update visible tab every 1 second for time-sensitive data
+    local elapsed = 0
+    frame:SetScript("OnUpdate", function(_, dt)
+        elapsed = elapsed + dt
+        if elapsed < 1.0 then return end
+        elapsed = 0
+        if not PA.mainFrame or not PA.mainFrame:IsShown() then return end
+        if PA.activeTab == TAB_DASHBOARD  then PA:RefreshDashboard()  end
+        if PA.activeTab == TAB_STATISTICS then PA:RefreshStatsTab()   end
+    end)
 end
 
 function PA:SelectTab(index)
@@ -460,24 +471,50 @@ function PA:BuildDashboardTab(panel)
 
     -- Hero talent line
     local heroY = cardY2 - cardH - 16
-    MakeLabel(panel, "Hero Talent:", "GameFontNormalSmall", THEME.textDim,
+    MakeLabel(panel, L["DASH_HERO_TALENT"] .. ":", "GameFontNormalSmall", THEME.textDim,
         "TOPLEFT", panel, "TOPLEFT", 20, heroY)
     local heroValue = MakeLabel(panel, "—", "GameFontNormalSmall", THEME.text,
-        "TOPLEFT", panel, "TOPLEFT", 110, heroY)
+        "TOPLEFT", panel, "TOPLEFT", 130, heroY)
     panel.rows.heroValue = heroValue
+
+    -- Third row: PI status + cooldown
+    local row3Y = heroY - 24
+
+    -- PI Active indicator
+    MakeLabel(panel, "PI Status:", "GameFontNormalSmall", THEME.textDim,
+        "TOPLEFT", panel, "TOPLEFT", 20, row3Y)
+    local piStatusValue = MakeLabel(panel, "Inactive", "GameFontNormalSmall", THEME.textDim,
+        "TOPLEFT", panel, "TOPLEFT", 130, row3Y)
+    panel.rows.piStatusValue = piStatusValue
+
+    -- Cooldown remaining
+    MakeLabel(panel, L["MSG_COOLDOWN"] .. ":", "GameFontNormalSmall", THEME.textDim,
+        "TOPLEFT", panel, "TOPLEFT", 280, row3Y)
+    local cdValue = MakeLabel(panel, "Ready", "GameFontNormalSmall", THEME.success,
+        "TOPLEFT", panel, "TOPLEFT", 350, row3Y)
+    panel.rows.cdValue = cdValue
+
+    -- Session line
+    local sessY = row3Y - 20
+    MakeLabel(panel, "Session:", "GameFontNormalSmall", THEME.textDim,
+        "TOPLEFT", panel, "TOPLEFT", 20, sessY)
+    local sessValue = MakeLabel(panel, "0 bursts / 0 requests / 0 PI", "GameFontNormalSmall", THEME.textDim,
+        "TOPLEFT", panel, "TOPLEFT", 130, sessY)
+    panel.rows.sessValue = sessValue
 
     -- Action buttons at bottom
     local btnY = 14
 
-    local testBtn = CreateModernButton(panel, "Test Burst", 130, 30)
+    local testBtn = CreateModernButton(panel, L["BURST_TEST"], 130, 30)
     testBtn:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", 16, btnY)
     testBtn:SetScript("OnClick", function() PA:TestBurst() end)
 
     local sendBtn = CreateModernButton(panel, "Request PI", 130, 30, true)
     sendBtn:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", 156, btnY)
     sendBtn:SetScript("OnClick", function() PA:SendPIRequest(true) end)
+    panel.sendBtn = sendBtn
 
-    local toggleBtn = CreateModernButton(panel, "Disable", 100, 30)
+    local toggleBtn = CreateModernButton(panel, L["DISABLE"], 100, 30)
     toggleBtn:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -16, btnY)
     toggleBtn:SetScript("OnClick", function()
         PA:ToggleAddon()
@@ -529,9 +566,10 @@ function PA:RefreshDashboard()
         if self.lastBurstTime and self.lastBurstTime > 0 then
             local ago = GetTime() - self.lastBurstTime
             local name = self.lastBurstSpellID and ns.GetSpellName(self.lastBurstSpellID) or "?"
-            rows.burstValue:SetText(name .. " (" .. self:FormatDuration(ago) .. " ago)")
+            rows.burstValue:SetText(name .. " (" .. self:FormatDuration(ago) .. " " .. L["DASH_AGO"] .. ")")
+            rows.burstValue:SetTextColor(THEME.warning[1], THEME.warning[2], THEME.warning[3])
         else
-            rows.burstValue:SetText("None yet")
+            rows.burstValue:SetText(L["DASH_NONE_YET"])
             rows.burstValue:SetTextColor(THEME.textDim[1], THEME.textDim[2], THEME.textDim[3])
         end
     end
@@ -541,9 +579,10 @@ function PA:RefreshDashboard()
         if self.lastPIReceivedTime and self.lastPIReceivedTime > 0 then
             local ago = GetTime() - self.lastPIReceivedTime
             local src = self.lastPIReceivedSource or "?"
-            rows.piValue:SetText(src .. " (" .. self:FormatDuration(ago) .. " ago)")
+            rows.piValue:SetText(src .. " (" .. self:FormatDuration(ago) .. " " .. L["DASH_AGO"] .. ")")
+            rows.piValue:SetTextColor(THEME.success[1], THEME.success[2], THEME.success[3])
         else
-            rows.piValue:SetText("Waiting...")
+            rows.piValue:SetText(L["DASH_WAITING"])
             rows.piValue:SetTextColor(THEME.textDim[1], THEME.textDim[2], THEME.textDim[3])
         end
     end
@@ -575,7 +614,36 @@ function PA:RefreshDashboard()
 
     -- Toggle btn text
     if panel.toggleBtn then
-        panel.toggleBtn.label:SetText(self:IsAddonEnabled() and "Disable" or "Enable")
+        panel.toggleBtn.label:SetText(self:IsAddonEnabled() and L["DISABLE"] or L["ENABLE"])
+    end
+
+    -- PI Active status
+    if rows.piStatusValue then
+        if self.piActive then
+            rows.piStatusValue:SetText("|cff55ff77ACTIVE|r")
+            rows.piStatusValue:SetTextColor(THEME.success[1], THEME.success[2], THEME.success[3])
+        else
+            rows.piStatusValue:SetText("Inactive")
+            rows.piStatusValue:SetTextColor(THEME.textDim[1], THEME.textDim[2], THEME.textDim[3])
+        end
+    end
+
+    -- Cooldown remaining
+    if rows.cdValue then
+        local cdRemain = self:GetCooldownRemaining()
+        if cdRemain > 0 then
+            rows.cdValue:SetText(string.format(L["DASH_CD_REMAINING"], self:FormatDuration(cdRemain)))
+            rows.cdValue:SetTextColor(THEME.warning[1], THEME.warning[2], THEME.warning[3])
+        else
+            rows.cdValue:SetText("Ready")
+            rows.cdValue:SetTextColor(THEME.success[1], THEME.success[2], THEME.success[3])
+        end
+    end
+
+    -- Session stats
+    if rows.sessValue then
+        rows.sessValue:SetText(string.format("%d bursts / %d requests / %d PI",
+            self.sessionBursts or 0, self.sessionRequests or 0, self.sessionReceived or 0))
     end
 end
 
@@ -991,11 +1059,12 @@ function PA:BuildMessagesTab(panel)
     MakeLabel(panel, "Cooldown:", "GameFontNormal", THEME.textDim,
         "TOPLEFT", panel, "TOPLEFT", 20, yOff)
 
-    local cooldowns = { 15, 30, 60, 120 }
+    local cooldowns = { 90, 105, 120, 150, 180 }
+    local cdLabels  = { "1:30", "1:45", "2:00", "2:30", "3:00" }
     panel.cdBtns = {}
     for i, cd in ipairs(cooldowns) do
         local isActive = (self.db.profile.message.cooldown == cd)
-        local btn = CreateModernButton(panel, cd .. "s", 50, 24, isActive)
+        local btn = CreateModernButton(panel, cdLabels[i], 50, 24, isActive)
         btn:SetPoint("TOPLEFT", panel, "TOPLEFT", 110 + (i - 1) * 58, yOff)
         local capCD = cd
         btn:SetScript("OnClick", function()
@@ -1269,6 +1338,8 @@ end
 
 
 -- ─── Alert Overlay ────────────────────────────────────────────────────────────
+-- Slim notification bar — non-intrusive, positioned above character by default.
+-- Slides in from top, stays briefly, fades out.
 
 function PA:ShowAlert(message)
     if not self.alertFrame then
@@ -1276,25 +1347,33 @@ function PA:ShowAlert(message)
     end
 
     local cfg = self.db.profile.alert
-    self.alertFrame:SetScale(cfg.scale or 1.5)
+    self.alertFrame:SetScale(cfg.scale or 1.0)
     self.alertFrame:ClearAllPoints()
-    self.alertFrame:SetPoint("CENTER", UIParent, "CENTER", cfg.posX or 0, cfg.posY or 100)
+    self.alertFrame:SetPoint("CENTER", UIParent, "CENTER", cfg.posX or 0, cfg.posY or 200)
     self.alertFrame.text:SetText(message)
-    self.alertFrame:SetAlpha(1.0)
+    self.alertFrame:SetAlpha(0)
     self.alertFrame:Show()
 
-    local duration = cfg.duration or 3.0
+    local duration  = cfg.duration or 2.5
+    local fadeIn    = 0.2
+    local fadeOut   = 0.6
     local startTime = GetTime()
-    local frame = self.alertFrame
+    local frame     = self.alertFrame
 
     frame:SetScript("OnUpdate", function(self_f)
         local elapsed = GetTime() - startTime
-        local fadeStart = duration - 0.8
-        if elapsed >= duration then
+        if elapsed < fadeIn then
+            -- Slide/fade in
+            self_f:SetAlpha(elapsed / fadeIn)
+        elseif elapsed < duration - fadeOut then
+            -- Hold
+            self_f:SetAlpha(1.0)
+        elseif elapsed < duration then
+            -- Fade out
+            self_f:SetAlpha(1.0 - (elapsed - (duration - fadeOut)) / fadeOut)
+        else
             self_f:Hide()
             self_f:SetScript("OnUpdate", nil)
-        elseif elapsed >= fadeStart then
-            self_f:SetAlpha(1.0 - (elapsed - fadeStart) / 0.8)
         end
     end)
 end
@@ -1308,32 +1387,34 @@ end
 
 function PA:CreateAlertFrame()
     local frame = CreateFrame("Frame", "WP4PIAlertFrame", UIParent, "BackdropTemplate")
-    frame:SetSize(320, 70)
-    frame:SetPoint("CENTER", UIParent, "CENTER", 0, 100)
-    frame:SetFrameStrata("FULLSCREEN_DIALOG")
+    frame:SetSize(260, 36)
+    frame:SetPoint("CENTER", UIParent, "CENTER", 0, 200)
+    frame:SetFrameStrata("HIGH")
     frame:Hide()
 
     frame:SetBackdrop({
         bgFile = "Interface\\Buttons\\WHITE8X8",
         edgeFile = "Interface\\Buttons\\WHITE8X8",
-        edgeSize = 2,
+        edgeSize = 1,
     })
-    frame:SetBackdropColor(0.05, 0.03, 0.10, 0.92)
-    frame:SetBackdropBorderColor(THEME.accent[1], THEME.accent[2], THEME.accent[3], 0.9)
+    frame:SetBackdropColor(0.06, 0.04, 0.12, 0.88)
+    frame:SetBackdropBorderColor(THEME.accent[1], THEME.accent[2], THEME.accent[3], 0.6)
 
-    local text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    text:SetAllPoints()
-    text:SetJustifyH("CENTER")
+    -- Left accent bar
+    local accent = frame:CreateTexture(nil, "OVERLAY")
+    accent:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
+    accent:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 0, 0)
+    accent:SetWidth(3)
+    accent:SetColorTexture(THEME.accent[1], THEME.accent[2], THEME.accent[3], 1.0)
+
+    -- Text
+    local text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    text:SetPoint("LEFT", frame, "LEFT", 12, 0)
+    text:SetPoint("RIGHT", frame, "RIGHT", -8, 0)
+    text:SetJustifyH("LEFT")
     text:SetJustifyV("MIDDLE")
-    text:SetTextColor(1.0, 0.92, 0.5)
+    text:SetTextColor(0.95, 0.88, 0.55)
     frame.text = text
-
-    -- Top glow line
-    local glow = frame:CreateTexture(nil, "OVERLAY")
-    glow:SetPoint("TOPLEFT", frame, "TOPLEFT", 2, -2)
-    glow:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -2, -2)
-    glow:SetHeight(2)
-    glow:SetColorTexture(THEME.accent[1], THEME.accent[2], THEME.accent[3], 0.7)
 
     self.alertFrame = frame
 end
@@ -1375,10 +1456,10 @@ function PA:BuildAlertsTab(panel)
     scaleSlider:SetMinMaxValues(0.5, 3.0)
     scaleSlider:SetValueStep(0.1)
     scaleSlider:SetObeyStepOnDrag(true)
-    scaleSlider:SetValue(self.db.profile.alert.scale or 1.5)
+    scaleSlider:SetValue(self.db.profile.alert.scale or 1.0)
     _G["WP4PIAlertScaleLow"]:SetText("0.5")
     _G["WP4PIAlertScaleHigh"]:SetText("3.0")
-    _G["WP4PIAlertScaleText"]:SetText(string.format("%.1f", self.db.profile.alert.scale or 1.5))
+    _G["WP4PIAlertScaleText"]:SetText(string.format("%.1f", self.db.profile.alert.scale or 1.0))
     scaleSlider:SetScript("OnValueChanged", function(_, v)
         v = math.floor(v * 10 + 0.5) / 10
         PA.db.profile.alert.scale = v
@@ -1397,10 +1478,10 @@ function PA:BuildAlertsTab(panel)
     durSlider:SetMinMaxValues(0.5, 10.0)
     durSlider:SetValueStep(0.5)
     durSlider:SetObeyStepOnDrag(true)
-    durSlider:SetValue(self.db.profile.alert.duration or 3.0)
+    durSlider:SetValue(self.db.profile.alert.duration or 2.5)
     _G["WP4PIAlertDurLow"]:SetText("0.5s")
     _G["WP4PIAlertDurHigh"]:SetText("10s")
-    _G["WP4PIAlertDurText"]:SetText(string.format("%.1fs", self.db.profile.alert.duration or 3.0))
+    _G["WP4PIAlertDurText"]:SetText(string.format("%.1fs", self.db.profile.alert.duration or 2.5))
     durSlider:SetScript("OnValueChanged", function(_, v)
         v = math.floor(v * 2 + 0.5) / 2
         PA.db.profile.alert.duration = v
@@ -1444,10 +1525,10 @@ function PA:BuildAlertsTab(panel)
     posYSlider:SetMinMaxValues(-400, 400)
     posYSlider:SetValueStep(5)
     posYSlider:SetObeyStepOnDrag(true)
-    posYSlider:SetValue(self.db.profile.alert.posY or 100)
+    posYSlider:SetValue(self.db.profile.alert.posY or 200)
     _G["WP4PIAlertPosYLow"]:SetText("-400")
     _G["WP4PIAlertPosYHigh"]:SetText("400")
-    _G["WP4PIAlertPosYText"]:SetText(tostring(self.db.profile.alert.posY or 100))
+    _G["WP4PIAlertPosYText"]:SetText(tostring(self.db.profile.alert.posY or 200))
     posYSlider:SetScript("OnValueChanged", function(_, v)
         v = math.floor(v / 5 + 0.5) * 5
         PA.db.profile.alert.posY = v
@@ -1481,10 +1562,10 @@ function PA:BuildAlertsTab(panel)
     volSlider:SetMinMaxValues(0, 1)
     volSlider:SetValueStep(0.05)
     volSlider:SetObeyStepOnDrag(true)
-    volSlider:SetValue(self.db.profile.alert.volume or 0.7)
+    volSlider:SetValue(self.db.profile.alert.volume or 0.5)
     _G["WP4PIAlertVolLow"]:SetText("0%")
     _G["WP4PIAlertVolHigh"]:SetText("100%")
-    _G["WP4PIAlertVolText"]:SetText(string.format("%.0f%%", (self.db.profile.alert.volume or 0.7) * 100))
+    _G["WP4PIAlertVolText"]:SetText(string.format("%.0f%%", (self.db.profile.alert.volume or 0.5) * 100))
     volSlider:SetScript("OnValueChanged", function(_, v)
         v = math.floor(v * 20 + 0.5) / 20
         PA.db.profile.alert.volume = v
@@ -1538,10 +1619,10 @@ function PA:RefreshAlertsTab()
     -- Sync UI with current DB values
     if panel.visualCB then panel.visualCB:SetChecked(self.db.profile.alert.visual) end
     if panel.soundCB then panel.soundCB:SetChecked(self.db.profile.alert.sound) end
-    if panel.scaleSlider then panel.scaleSlider:SetValue(self.db.profile.alert.scale or 1.5) end
-    if panel.durSlider then panel.durSlider:SetValue(self.db.profile.alert.duration or 3.0) end
+    if panel.scaleSlider then panel.scaleSlider:SetValue(self.db.profile.alert.scale or 1.0) end
+    if panel.durSlider then panel.durSlider:SetValue(self.db.profile.alert.duration or 2.5) end
     if panel.posXSlider then panel.posXSlider:SetValue(self.db.profile.alert.posX or 0) end
-    if panel.posYSlider then panel.posYSlider:SetValue(self.db.profile.alert.posY or 100) end
-    if panel.volSlider then panel.volSlider:SetValue(self.db.profile.alert.volume or 0.7) end
+    if panel.posYSlider then panel.posYSlider:SetValue(self.db.profile.alert.posY or 200) end
+    if panel.volSlider then panel.volSlider:SetValue(self.db.profile.alert.volume or 0.5) end
     if panel.soundFileBox then panel.soundFileBox:SetText(self.db.profile.alert.soundFile or "") end
 end

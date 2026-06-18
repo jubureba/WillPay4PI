@@ -152,7 +152,7 @@ function PA:OnBurstSpellDetected(spellID, event, spellCfg)
     end
 
     if self.mainFrame and self.mainFrame:IsShown() then
-        self:RefreshDashboard()
+        self:RefreshMainWindow()
     end
 end
 

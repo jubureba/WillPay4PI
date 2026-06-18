@@ -309,7 +309,7 @@ function PA:OnPIReceived(sourceName, timestamp)
     self:DebugLog(1, "PI received from: %s", tostring(sourceName))
 
     if self.mainFrame and self.mainFrame:IsShown() then
-        self:RefreshDashboard()
+        self:RefreshMainWindow()
     end
 end
 

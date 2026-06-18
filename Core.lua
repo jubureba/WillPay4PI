@@ -7,7 +7,7 @@ _G["WillPay4PI"] = PA
 
 local L = ns.L
 
-PA.version = "1.0.2"
+PA.version = "1.1.0"
 
 -- ─── Default Database ─────────────────────────────────────────────────────────
 
@@ -32,12 +32,12 @@ PA.defaults = {
         alert = {
             visual   = true,
             sound    = true,
-            volume   = 0.7,
-            scale    = 1.5,
+            volume   = 0.5,
+            scale    = 1.0,
             posX     = 0,
-            posY     = 100,
-            duration = 3.0,
-            soundFile = "Interface\\AddOns\\PIAssistant\\Media\\Sounds\\ping.ogg",
+            posY     = 200,
+            duration = 2.5,
+            soundFile = "",
         },
 
         burst = {
@@ -48,7 +48,7 @@ PA.defaults = {
         message = {
             template = "PI please - {spec} bursting ({time})",
             channel  = "WHISPER",
-            cooldown = 30,
+            cooldown = 90,
         },
 
         priests = {
@@ -314,11 +314,44 @@ function PA:GetPlayerClassSpec()
     return class, specID, specNameLocalized
 end
 
--- Returns current hero talent name (Midnight-era API; fallback nil).
+-- Returns current hero talent name (Midnight-era API).
+-- C_ClassTalents.GetActiveHeroTalentSpec() returns a numeric SubTreeID.
+-- We map it to a display name via a static lookup table.
+local HERO_TALENT_NAMES = {
+    -- Death Knight
+    [31] = "San'layn", [32] = "Rider of the Apocalypse", [33] = "Deathbringer",
+    -- Demon Hunter
+    [34] = "Fel-Scarred", [35] = "Aldrachi Reaver", [124] = "Annihilator",
+    -- Druid
+    [21] = "Druid of the Claw", [22] = "Wildstalker", [23] = "Keeper of the Grove", [24] = "Elune's Chosen",
+    -- Evoker
+    [36] = "Scalecommander", [37] = "Flameshaper", [38] = "Chronowarden",
+    -- Hunter
+    [42] = "Sentinel", [43] = "Pack Leader", [44] = "Dark Ranger",
+    -- Mage
+    [39] = "Sunfury", [40] = "Spellslinger", [41] = "Frostfire",
+    -- Monk
+    [64] = "Conduit of the Celestials", [65] = "Shado-pan", [66] = "Master of Harmony",
+    -- Paladin
+    [48] = "Templar", [49] = "Lightsmith", [50] = "Herald of the Sun",
+    -- Priest
+    [18] = "Voidweaver", [19] = "Archon", [20] = "Oracle",
+    -- Rogue
+    [51] = "Trickster", [52] = "Fatebound", [53] = "Deathstalker",
+    -- Shaman
+    [54] = "Totemic", [55] = "Stormbringer", [56] = "Farseer",
+    -- Warlock
+    [57] = "Soul Harvester", [58] = "Hellcaller", [59] = "Diabolist",
+    -- Warrior
+    [60] = "Slayer", [61] = "Mountain Thane", [62] = "Colossus",
+}
+
 function PA:GetHeroTalentName()
-    if C_ClassTalents and C_ClassTalents.GetHeroTalentSubTreeDisplayInfo then
-        local info = C_ClassTalents.GetHeroTalentSubTreeDisplayInfo()
-        return info and info.name or nil
+    if C_ClassTalents and C_ClassTalents.GetActiveHeroTalentSpec then
+        local heroSpecID = C_ClassTalents.GetActiveHeroTalentSpec()
+        if heroSpecID then
+            return HERO_TALENT_NAMES[heroSpecID] or ("Hero #" .. heroSpecID)
+        end
     end
     return nil
 end
