@@ -7,7 +7,7 @@ _G["WillPay4PI"] = PA
 
 local L = ns.L
 
-PA.version = "1.0.0"
+PA.version = "1.0.1"
 
 -- ─── Default Database ─────────────────────────────────────────────────────────
 

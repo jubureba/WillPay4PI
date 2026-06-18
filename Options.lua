@@ -10,12 +10,12 @@ function PA:RegisterOptions()
     local AceDBOptions    = LibStub("AceDBOptions-3.0")
 
     AceConfig:RegisterOptionsTable(addonName, self:GetOptionsTable())
-    self.optionsFrame = AceConfigDialog:AddToBlizOptions(addonName, "PI Assistant")
+    self.optionsFrame = AceConfigDialog:AddToBlizOptions(addonName, "Will Pay 4 PI")
 
     -- Profiles sub-panel
     local profilesTable = AceDBOptions:GetOptionsTable(self.db)
     AceConfig:RegisterOptionsTable(addonName .. "_Profiles", profilesTable)
-    AceConfigDialog:AddToBlizOptions(addonName .. "_Profiles", L["PROFILE_TITLE"], "PI Assistant")
+    AceConfigDialog:AddToBlizOptions(addonName .. "_Profiles", L["PROFILE_TITLE"], "Will Pay 4 PI")
 end
 
 function PA:RefreshOptions()
@@ -26,7 +26,7 @@ end
 
 function PA:GetOptionsTable()
     return {
-        name    = "PI Assistant",
+        name    = "Will Pay 4 PI",
         handler = PA,
         type    = "group",
         args    = {
@@ -240,74 +240,122 @@ function PA:GetOptionsTable()
                 type  = "group",
                 order = 40,
                 args  = {
+                    desc = {
+                        name  = "Configure visual and audio alerts for burst detection and PI received events.",
+                        type  = "description",
+                        order = 0,
+                    },
+                    visualHeader = {
+                        name  = "Visual Alerts",
+                        type  = "header",
+                        order = 1,
+                    },
                     visual = {
-                        name = "Visual Alert",
+                        name = "Enable Visual Alert",
                         desc = "Show an on-screen overlay when a burst is detected or PI is received.",
                         type = "toggle",
-                        order = 1,
+                        order = 2,
+                        width = "full",
                         get  = function() return PA.db.profile.alert.visual end,
                         set  = function(_, v) PA.db.profile.alert.visual = v end,
-                    },
-                    sound = {
-                        name = "Sound Alert",
-                        desc = "Play a sound when a burst is detected or PI is received.",
-                        type = "toggle",
-                        order = 2,
-                        get  = function() return PA.db.profile.alert.sound end,
-                        set  = function(_, v) PA.db.profile.alert.sound = v end,
-                    },
-                    volume = {
-                        name  = "Volume",
-                        desc  = "Alert sound volume (0 = mute, 1 = full).",
-                        type  = "range",
-                        order = 3,
-                        min   = 0, max = 1, step = 0.05,
-                        get   = function() return PA.db.profile.alert.volume end,
-                        set   = function(_, v) PA.db.profile.alert.volume = v end,
                     },
                     scale = {
                         name  = "Alert Scale",
                         desc  = "Size of the visual alert overlay.",
                         type  = "range",
-                        order = 4,
+                        order = 3,
                         min   = 0.5, max = 3.0, step = 0.1,
                         get   = function() return PA.db.profile.alert.scale end,
                         set   = function(_, v) PA.db.profile.alert.scale = v end,
                     },
-                    posX = {
-                        name  = "Horizontal Position",
-                        desc  = "Horizontal offset of the alert from the screen center.",
-                        type  = "range",
-                        order = 5,
-                        min   = -1000, max = 1000, step = 1,
-                        get   = function() return PA.db.profile.alert.posX end,
-                        set   = function(_, v) PA.db.profile.alert.posX = v end,
-                    },
-                    posY = {
-                        name  = "Vertical Position",
-                        desc  = "Vertical offset of the alert from the screen center.",
-                        type  = "range",
-                        order = 6,
-                        min   = -500, max = 500, step = 1,
-                        get   = function() return PA.db.profile.alert.posY end,
-                        set   = function(_, v) PA.db.profile.alert.posY = v end,
-                    },
                     duration = {
-                        name  = "Display Duration",
-                        desc  = "Seconds the visual alert stays on screen.",
+                        name  = "Display Duration (seconds)",
+                        desc  = "How long the visual alert stays on screen before fading out.",
                         type  = "range",
-                        order = 7,
+                        order = 4,
                         min   = 0.5, max = 10.0, step = 0.5,
                         get   = function() return PA.db.profile.alert.duration end,
                         set   = function(_, v) PA.db.profile.alert.duration = v end,
                     },
-                    testAlert = {
-                        name  = "Test Alert",
-                        desc  = "Show a test alert to preview the position and style.",
-                        type  = "execute",
+                    posHeader = {
+                        name  = "Position",
+                        type  = "header",
                         order = 10,
+                    },
+                    posX = {
+                        name  = "Horizontal Offset",
+                        desc  = "Horizontal offset of the alert from screen center. Negative = left, positive = right.",
+                        type  = "range",
+                        order = 11,
+                        min   = -800, max = 800, step = 5,
+                        get   = function() return PA.db.profile.alert.posX end,
+                        set   = function(_, v) PA.db.profile.alert.posX = v end,
+                    },
+                    posY = {
+                        name  = "Vertical Offset",
+                        desc  = "Vertical offset of the alert from screen center. Negative = down, positive = up.",
+                        type  = "range",
+                        order = 12,
+                        min   = -400, max = 400, step = 5,
+                        get   = function() return PA.db.profile.alert.posY end,
+                        set   = function(_, v) PA.db.profile.alert.posY = v end,
+                    },
+                    soundHeader = {
+                        name  = "Sound",
+                        type  = "header",
+                        order = 20,
+                    },
+                    sound = {
+                        name = "Enable Sound Alert",
+                        desc = "Play a sound when a burst is detected or PI is received.",
+                        type = "toggle",
+                        order = 21,
+                        width = "full",
+                        get  = function() return PA.db.profile.alert.sound end,
+                        set  = function(_, v) PA.db.profile.alert.sound = v end,
+                    },
+                    volume = {
+                        name  = "Volume",
+                        desc  = "Alert sound volume (0 = muted, 1 = full volume).",
+                        type  = "range",
+                        order = 22,
+                        min   = 0, max = 1, step = 0.05,
+                        isPercent = true,
+                        get   = function() return PA.db.profile.alert.volume end,
+                        set   = function(_, v) PA.db.profile.alert.volume = v end,
+                    },
+                    soundFile = {
+                        name  = "Custom Sound File",
+                        desc  = "Path to a custom .ogg sound file (relative to WoW folder). Leave empty to use the default Raid Warning sound.\n\nExample: Interface\\AddOns\\PIAssistant\\Media\\Sounds\\ping.ogg",
+                        type  = "input",
+                        order = 23,
+                        width = "full",
+                        get   = function() return PA.db.profile.alert.soundFile or "" end,
+                        set   = function(_, v)
+                            PA.db.profile.alert.soundFile = (v and v ~= "") and v or ""
+                        end,
+                    },
+                    testHeader = {
+                        name  = "Testing",
+                        type  = "header",
+                        order = 30,
+                    },
+                    testAlert = {
+                        name  = "Test Visual Alert",
+                        desc  = "Show a test alert to preview position, scale, and duration.",
+                        type  = "execute",
+                        order = 31,
                         func  = function()
-                            PA:ShowAlert("[TEST]\nPower Infusion Active!")
+                            PA:ShowAlert("Power Infusion Active!\n[TEST]")
+                        end,
+                    },
+                    testSound = {
+                        name  = "Test Sound",
+                        desc  = "Play the configured alert sound.",
+                        type  = "execute",
+                        order = 32,
+                        func  = function()
+                            PA:PlayAlertSound()
                         end,
                     },
                 },

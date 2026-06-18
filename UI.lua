@@ -33,6 +33,7 @@ local TAB_PRIESTS    = 2
 local TAB_BURST      = 3
 local TAB_MESSAGES   = 4
 local TAB_STATISTICS = 5
+local TAB_ALERTS     = 6
 
 local TAB_ICONS = {
     -- FileDataID numeric textures (never break across patches)
@@ -41,9 +42,11 @@ local TAB_ICONS = {
     132347,   -- Ability_Warrior_Rampage (Burst)
     133468,   -- INV_Letter_15 (Messages)
     134327,   -- INV_Misc_Note_01 (Stats)
+    136116,   -- Spell_Nature_WispSplode (Alerts/Settings)
 }
 
-local TAB_LABELS = { "Dashboard", "Priests", "Burst", "Messages", "Stats" }
+local TAB_LABELS = { "Dashboard", "Priests", "Burst", "Messages", "Stats", "Alerts" }
+
 
 -- ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -241,7 +244,7 @@ function PA:CreateMainWindow()
     CreateBG(sidebar, THEME.sidebar)
 
     frame.navButtons = {}
-    for i = 1, 5 do
+    for i = 1, 6 do
         local btn = CreateFrame("Button", nil, sidebar)
         btn:SetSize(SIDEBAR_W, 44)
         btn:SetPoint("TOPLEFT", sidebar, "TOPLEFT", 0, -(i - 1) * 46 - 8)
@@ -296,7 +299,7 @@ function PA:CreateMainWindow()
 
     -- Tab panels
     frame.tabPanels = {}
-    for i = 1, 5 do
+    for i = 1, 6 do
         local panel = CreateFrame("Frame", nil, contentArea)
         panel:SetAllPoints(contentArea)
         panel:Hide()
@@ -336,6 +339,7 @@ function PA:CreateMainWindow()
     self:BuildBurstTab(frame.tabPanels[TAB_BURST])
     self:BuildMessagesTab(frame.tabPanels[TAB_MESSAGES])
     self:BuildStatisticsTab(frame.tabPanels[TAB_STATISTICS])
+    self:BuildAlertsTab(frame.tabPanels[TAB_ALERTS])
 
     self:SelectTab(TAB_DASHBOARD)
 end
@@ -360,6 +364,7 @@ function PA:SelectTab(index)
     if index == TAB_BURST      then self:RefreshBurstTab()    end
     if index == TAB_MESSAGES   then self:RefreshMessagesTab() end
     if index == TAB_STATISTICS then self:RefreshStatsTab()    end
+    if index == TAB_ALERTS     then self:RefreshAlertsTab()   end
 end
 
 function PA:RefreshMainWindow()
@@ -369,6 +374,7 @@ function PA:RefreshMainWindow()
     if self.activeTab == TAB_BURST      then self:RefreshBurstTab()    end
     if self.activeTab == TAB_MESSAGES   then self:RefreshMessagesTab() end
     if self.activeTab == TAB_STATISTICS then self:RefreshStatsTab()    end
+    if self.activeTab == TAB_ALERTS     then self:RefreshAlertsTab()   end
 end
 
 
@@ -1330,4 +1336,212 @@ function PA:CreateAlertFrame()
     glow:SetColorTexture(THEME.accent[1], THEME.accent[2], THEME.accent[3], 0.7)
 
     self.alertFrame = frame
+end
+
+
+-- ─── Alerts Tab ───────────────────────────────────────────────────────────────
+
+function PA:BuildAlertsTab(panel)
+    MakeLabel(panel, "Alert Settings", "GameFontNormalLarge", THEME.text,
+        "TOPLEFT", panel, "TOPLEFT", 20, -16)
+
+    local yOff = -50
+
+    -- ── Visual Section ────────────────────────────────────────────────────
+    MakeLabel(panel, "VISUAL", "GameFontNormalSmall", THEME.textMuted,
+        "TOPLEFT", panel, "TOPLEFT", 20, yOff)
+    yOff = yOff - 20
+
+    -- Enable visual
+    local visualCB = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
+    visualCB:SetSize(22, 22)
+    visualCB:SetPoint("TOPLEFT", panel, "TOPLEFT", 20, yOff)
+    visualCB:SetChecked(self.db.profile.alert.visual)
+    visualCB:SetScript("OnClick", function(cb)
+        PA.db.profile.alert.visual = cb:GetChecked()
+    end)
+    MakeLabel(panel, "Show visual alert on screen", "GameFontNormal", THEME.text,
+        "TOPLEFT", panel, "TOPLEFT", 46, yOff - 3)
+    panel.visualCB = visualCB
+
+    yOff = yOff - 32
+
+    -- Scale
+    MakeLabel(panel, "Scale:", "GameFontNormalSmall", THEME.textDim,
+        "TOPLEFT", panel, "TOPLEFT", 20, yOff)
+    local scaleSlider = CreateFrame("Slider", "WP4PIAlertScale", panel, "OptionsSliderTemplate")
+    scaleSlider:SetPoint("TOPLEFT", panel, "TOPLEFT", 80, yOff - 2)
+    scaleSlider:SetWidth(160)
+    scaleSlider:SetMinMaxValues(0.5, 3.0)
+    scaleSlider:SetValueStep(0.1)
+    scaleSlider:SetObeyStepOnDrag(true)
+    scaleSlider:SetValue(self.db.profile.alert.scale or 1.5)
+    _G["WP4PIAlertScaleLow"]:SetText("0.5")
+    _G["WP4PIAlertScaleHigh"]:SetText("3.0")
+    _G["WP4PIAlertScaleText"]:SetText(string.format("%.1f", self.db.profile.alert.scale or 1.5))
+    scaleSlider:SetScript("OnValueChanged", function(_, v)
+        v = math.floor(v * 10 + 0.5) / 10
+        PA.db.profile.alert.scale = v
+        _G["WP4PIAlertScaleText"]:SetText(string.format("%.1f", v))
+    end)
+    panel.scaleSlider = scaleSlider
+
+    yOff = yOff - 40
+
+    -- Duration
+    MakeLabel(panel, "Duration:", "GameFontNormalSmall", THEME.textDim,
+        "TOPLEFT", panel, "TOPLEFT", 20, yOff)
+    local durSlider = CreateFrame("Slider", "WP4PIAlertDur", panel, "OptionsSliderTemplate")
+    durSlider:SetPoint("TOPLEFT", panel, "TOPLEFT", 80, yOff - 2)
+    durSlider:SetWidth(160)
+    durSlider:SetMinMaxValues(0.5, 10.0)
+    durSlider:SetValueStep(0.5)
+    durSlider:SetObeyStepOnDrag(true)
+    durSlider:SetValue(self.db.profile.alert.duration or 3.0)
+    _G["WP4PIAlertDurLow"]:SetText("0.5s")
+    _G["WP4PIAlertDurHigh"]:SetText("10s")
+    _G["WP4PIAlertDurText"]:SetText(string.format("%.1fs", self.db.profile.alert.duration or 3.0))
+    durSlider:SetScript("OnValueChanged", function(_, v)
+        v = math.floor(v * 2 + 0.5) / 2
+        PA.db.profile.alert.duration = v
+        _G["WP4PIAlertDurText"]:SetText(string.format("%.1fs", v))
+    end)
+    panel.durSlider = durSlider
+
+    yOff = yOff - 50
+
+    -- Position
+    MakeLabel(panel, "POSITION", "GameFontNormalSmall", THEME.textMuted,
+        "TOPLEFT", panel, "TOPLEFT", 20, yOff)
+    yOff = yOff - 20
+
+    MakeLabel(panel, "X Offset:", "GameFontNormalSmall", THEME.textDim,
+        "TOPLEFT", panel, "TOPLEFT", 20, yOff)
+    local posXSlider = CreateFrame("Slider", "WP4PIAlertPosX", panel, "OptionsSliderTemplate")
+    posXSlider:SetPoint("TOPLEFT", panel, "TOPLEFT", 80, yOff - 2)
+    posXSlider:SetWidth(160)
+    posXSlider:SetMinMaxValues(-800, 800)
+    posXSlider:SetValueStep(5)
+    posXSlider:SetObeyStepOnDrag(true)
+    posXSlider:SetValue(self.db.profile.alert.posX or 0)
+    _G["WP4PIAlertPosXLow"]:SetText("-800")
+    _G["WP4PIAlertPosXHigh"]:SetText("800")
+    _G["WP4PIAlertPosXText"]:SetText(tostring(self.db.profile.alert.posX or 0))
+    posXSlider:SetScript("OnValueChanged", function(_, v)
+        v = math.floor(v / 5 + 0.5) * 5
+        PA.db.profile.alert.posX = v
+        _G["WP4PIAlertPosXText"]:SetText(tostring(v))
+    end)
+    panel.posXSlider = posXSlider
+
+    yOff = yOff - 40
+
+    MakeLabel(panel, "Y Offset:", "GameFontNormalSmall", THEME.textDim,
+        "TOPLEFT", panel, "TOPLEFT", 20, yOff)
+    local posYSlider = CreateFrame("Slider", "WP4PIAlertPosY", panel, "OptionsSliderTemplate")
+    posYSlider:SetPoint("TOPLEFT", panel, "TOPLEFT", 80, yOff - 2)
+    posYSlider:SetWidth(160)
+    posYSlider:SetMinMaxValues(-400, 400)
+    posYSlider:SetValueStep(5)
+    posYSlider:SetObeyStepOnDrag(true)
+    posYSlider:SetValue(self.db.profile.alert.posY or 100)
+    _G["WP4PIAlertPosYLow"]:SetText("-400")
+    _G["WP4PIAlertPosYHigh"]:SetText("400")
+    _G["WP4PIAlertPosYText"]:SetText(tostring(self.db.profile.alert.posY or 100))
+    posYSlider:SetScript("OnValueChanged", function(_, v)
+        v = math.floor(v / 5 + 0.5) * 5
+        PA.db.profile.alert.posY = v
+        _G["WP4PIAlertPosYText"]:SetText(tostring(v))
+    end)
+    panel.posYSlider = posYSlider
+
+    yOff = yOff - 50
+
+    -- ── Sound Section ─────────────────────────────────────────────────────
+    MakeLabel(panel, "SOUND", "GameFontNormalSmall", THEME.textMuted,
+        "TOPLEFT", panel, "TOPLEFT", 300, -50)
+
+    local soundCB = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
+    soundCB:SetSize(22, 22)
+    soundCB:SetPoint("TOPLEFT", panel, "TOPLEFT", 300, -70)
+    soundCB:SetChecked(self.db.profile.alert.sound)
+    soundCB:SetScript("OnClick", function(cb)
+        PA.db.profile.alert.sound = cb:GetChecked()
+    end)
+    MakeLabel(panel, "Play sound on alert", "GameFontNormal", THEME.text,
+        "TOPLEFT", panel, "TOPLEFT", 326, -73)
+    panel.soundCB = soundCB
+
+    -- Volume
+    MakeLabel(panel, "Volume:", "GameFontNormalSmall", THEME.textDim,
+        "TOPLEFT", panel, "TOPLEFT", 300, -102)
+    local volSlider = CreateFrame("Slider", "WP4PIAlertVol", panel, "OptionsSliderTemplate")
+    volSlider:SetPoint("TOPLEFT", panel, "TOPLEFT", 360, -104)
+    volSlider:SetWidth(160)
+    volSlider:SetMinMaxValues(0, 1)
+    volSlider:SetValueStep(0.05)
+    volSlider:SetObeyStepOnDrag(true)
+    volSlider:SetValue(self.db.profile.alert.volume or 0.7)
+    _G["WP4PIAlertVolLow"]:SetText("0%")
+    _G["WP4PIAlertVolHigh"]:SetText("100%")
+    _G["WP4PIAlertVolText"]:SetText(string.format("%.0f%%", (self.db.profile.alert.volume or 0.7) * 100))
+    volSlider:SetScript("OnValueChanged", function(_, v)
+        v = math.floor(v * 20 + 0.5) / 20
+        PA.db.profile.alert.volume = v
+        _G["WP4PIAlertVolText"]:SetText(string.format("%.0f%%", v * 100))
+    end)
+    panel.volSlider = volSlider
+
+    -- Sound file
+    MakeLabel(panel, "Sound File:", "GameFontNormalSmall", THEME.textDim,
+        "TOPLEFT", panel, "TOPLEFT", 300, -150)
+    local sfBox = CreateFrame("EditBox", "WP4PISoundFileBox", panel, "InputBoxTemplate")
+    sfBox:SetSize(220, 22)
+    sfBox:SetPoint("TOPLEFT", panel, "TOPLEFT", 300, -168)
+    sfBox:SetAutoFocus(false)
+    sfBox:SetMaxLetters(256)
+    sfBox:SetText(self.db.profile.alert.soundFile or "")
+    sfBox:SetScript("OnEnterPressed", function(box)
+        PA.db.profile.alert.soundFile = box:GetText()
+        box:ClearFocus()
+    end)
+    sfBox:SetScript("OnEscapePressed", function(box) box:ClearFocus() end)
+    panel.soundFileBox = sfBox
+
+    MakeLabel(panel, "Leave empty for default Raid Warning sound.\nCustom: Interface\\AddOns\\PIAssistant\\Media\\Sounds\\file.ogg",
+        "GameFontNormalSmall", THEME.textMuted, "TOPLEFT", panel, "TOPLEFT", 300, -194)
+
+    -- ── Test Buttons ──────────────────────────────────────────────────────
+    local testVisBtn = CreateModernButton(panel, "Test Visual", 100, 28)
+    testVisBtn:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", 16, 14)
+    testVisBtn:SetScript("OnClick", function()
+        PA:ShowAlert("Power Infusion Active!\n[TEST]")
+    end)
+
+    local testSndBtn = CreateModernButton(panel, "Test Sound", 100, 28)
+    testSndBtn:SetPoint("BOTTOMLEFT", panel, "BOTTOMLEFT", 126, 14)
+    testSndBtn:SetScript("OnClick", function()
+        PA:PlayAlertSound()
+    end)
+
+    local aceBtn = CreateModernButton(panel, "Advanced Options", 130, 28)
+    aceBtn:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -16, 14)
+    aceBtn:SetScript("OnClick", function()
+        LibStub("AceConfigDialog-3.0"):Open(addonName)
+    end)
+end
+
+function PA:RefreshAlertsTab()
+    local panel = self.mainFrame and self.mainFrame.tabPanels[TAB_ALERTS]
+    if not panel or not panel:IsShown() then return end
+
+    -- Sync UI with current DB values
+    if panel.visualCB then panel.visualCB:SetChecked(self.db.profile.alert.visual) end
+    if panel.soundCB then panel.soundCB:SetChecked(self.db.profile.alert.sound) end
+    if panel.scaleSlider then panel.scaleSlider:SetValue(self.db.profile.alert.scale or 1.5) end
+    if panel.durSlider then panel.durSlider:SetValue(self.db.profile.alert.duration or 3.0) end
+    if panel.posXSlider then panel.posXSlider:SetValue(self.db.profile.alert.posX or 0) end
+    if panel.posYSlider then panel.posYSlider:SetValue(self.db.profile.alert.posY or 100) end
+    if panel.volSlider then panel.volSlider:SetValue(self.db.profile.alert.volume or 0.7) end
+    if panel.soundFileBox then panel.soundFileBox:SetText(self.db.profile.alert.soundFile or "") end
 end
