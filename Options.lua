@@ -10,12 +10,17 @@ function PA:RegisterOptions()
     local AceDBOptions    = LibStub("AceDBOptions-3.0")
 
     AceConfig:RegisterOptionsTable(addonName, self:GetOptionsTable())
-    self.optionsFrame = AceConfigDialog:AddToBlizOptions(addonName, "Will Pay 4 PI")
+
+    -- AddToBlizOptions was removed in Midnight 12.x; use pcall to avoid errors
+    local ok, frame = pcall(AceConfigDialog.AddToBlizOptions, AceConfigDialog, addonName, "Will Pay 4 PI")
+    if ok then
+        self.optionsFrame = frame
+    end
 
     -- Profiles sub-panel
     local profilesTable = AceDBOptions:GetOptionsTable(self.db)
     AceConfig:RegisterOptionsTable(addonName .. "_Profiles", profilesTable)
-    AceConfigDialog:AddToBlizOptions(addonName .. "_Profiles", L["PROFILE_TITLE"], "Will Pay 4 PI")
+    pcall(AceConfigDialog.AddToBlizOptions, AceConfigDialog, addonName .. "_Profiles", L["PROFILE_TITLE"], "Will Pay 4 PI")
 end
 
 function PA:RefreshOptions()
