@@ -280,10 +280,18 @@ end
 -- ─── Utility ─────────────────────────────────────────────────────────────────
 
 -- Returns "Name-Realm" key for a unit, or just "Name" if same realm.
+-- In Midnight 12.x, UnitName() can return "secret" values for certain units
+-- (e.g. targettarget). We use pcall to safely handle these without taint.
 function PA:GetUnitKey(unit)
-    local name, realm = UnitName(unit)
-    if not name then return nil end
-    if realm and realm ~= "" then
+    local ok, name, realm = pcall(UnitName, unit)
+    if not ok or not name then return nil end
+    -- realm may be secret; wrap the comparison in pcall
+    local useRealm = false
+    if realm then
+        local ok2, result = pcall(function() return realm ~= "" end)
+        useRealm = ok2 and result
+    end
+    if useRealm then
         return name .. "-" .. realm
     end
     return name

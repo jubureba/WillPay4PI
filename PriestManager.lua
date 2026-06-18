@@ -22,7 +22,8 @@ function PA:ScanGroupForPriests()
 
         local name, realm = UnitName(unit)
         if not name then return end
-        realm = (realm and realm ~= "") and realm or GetRealmName()
+        local realmOk, hasRealm = pcall(function() return realm and realm ~= "" end)
+        realm = (realmOk and hasRealm) and realm or GetRealmName()
         local key = name .. "-" .. realm
 
         local specName = self:GetUnitSpecName(unit)
@@ -298,7 +299,8 @@ end
 function PA:UpdatePriestUnit(unit)
     local name, realm = UnitName(unit)
     if not name then return end
-    realm = (realm and realm ~= "") and realm or GetRealmName()
+    local realmOk, hasRealm = pcall(function() return realm and realm ~= "" end)
+    realm = (realmOk and hasRealm) and realm or GetRealmName()
     local key = name .. "-" .. realm
 
     local info = self.priests[key]

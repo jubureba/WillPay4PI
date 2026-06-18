@@ -111,6 +111,11 @@ function PA:OnUnitAura(event, unit, updateInfo)
         return
     end
 
+    -- Only process group units (party1-4, raid1-40), skip things like targettarget
+    if not unit or (not unit:match("^party%d") and not unit:match("^raid%d")) then
+        return
+    end
+
     -- ── Group member aura changes: refresh priest status ──────────────────
     local key = self:GetUnitKey(unit)
     if key and self.priests and self.priests[key] then
