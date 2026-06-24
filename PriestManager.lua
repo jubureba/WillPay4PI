@@ -2,14 +2,14 @@ local addonName, ns = ...
 local PA = ns.PA
 local L  = ns.L
 
--- ─── Initialization ───────────────────────────────────────────────────────────
+-- --- Initialization -----------------------------------------------------------
 
 function PA:InitializePriestManager()
     self.priests = {}  -- [key] = priestInfo table
     self:ScanGroupForPriests()
 end
 
--- ─── Group Scanning ───────────────────────────────────────────────────────────
+-- --- Group Scanning -----------------------------------------------------------
 
 -- Full rescan of the current group for Priest class members.
 function PA:ScanGroupForPriests()
@@ -91,7 +91,7 @@ function PA:ScanGroupForPriests()
     self:DebugPriest("ScanGroupForPriests: found " .. self:CountPriests() .. " priests")
 end
 
--- ─── Unit Helpers ─────────────────────────────────────────────────────────────
+-- --- Unit Helpers -------------------------------------------------------------
 
 function PA:GetUnitSpecName(unit)
     -- GetInspectSpecialization requires a prior NotifyInspect(unit) call; returns 0 if unavailable.
@@ -122,7 +122,7 @@ function PA:IsUnitInRange(unit)
     return true
 end
 
--- ─── Priest Accessors ─────────────────────────────────────────────────────────
+-- --- Priest Accessors ---------------------------------------------------------
 
 function PA:GetAllPriests()
     local list = {}
@@ -169,7 +169,7 @@ function PA:IsPriestAvailable(info)
         and not UnitIsDeadOrGhost(info.unit)
 end
 
--- ─── Selection ────────────────────────────────────────────────────────────────
+-- --- Selection ----------------------------------------------------------------
 
 function PA:GetSelectedPriest()
     local key = self.db.profile.priests.selected
@@ -227,7 +227,7 @@ function PA:SelectNextAvailablePriest()
     end
 end
 
--- ─── Priority Management ──────────────────────────────────────────────────────
+-- --- Priority Management ------------------------------------------------------
 
 -- Sets the priest priority order from a list of keys.
 function PA:SetPriestPriority(orderedKeys)
@@ -294,7 +294,7 @@ function PA:SyncPriorityList()
     end
 end
 
--- ─── Status Update (called from Events.lua) ───────────────────────────────────
+-- --- Status Update (called from Events.lua) -----------------------------------
 
 function PA:UpdatePriestUnit(unit)
     local name, realm = UnitName(unit)

@@ -369,7 +369,7 @@ ns.ClassProfiles = {
     },
 }
 
--- ─── Spec ID to Profile Key (locale-independent) ─────────────────────────────
+-- --- Spec ID to Profile Key (locale-independent) -----------------------------
 ns.SpecIDToProfile = {
     -- Death Knight
     [250] = { class = "DEATHKNIGHT", spec = "BLOOD"    },
@@ -426,7 +426,7 @@ ns.SpecIDToProfile = {
     [73]  = { class = "WARRIOR", spec = "PROTECTION" },
 }
 
--- ─── Localized Spec Name Aliases ─────────────────────────────────────────────
+-- --- Localized Spec Name Aliases ---------------------------------------------
 ns.SpecNameAliases = {
     -- English
     DEVOUR = "DEVOUR", DEVOURER = "DEVOUR", HAVOC = "HAVOC", VENGEANCE = "VENGEANCE",
@@ -444,7 +444,7 @@ ns.SpecNameAliases = {
     -- Portuguese
     DEVORADOR = "DEVOUR", FURIA = "FURY", ARMAS = "ARMS", FOGO = "FIRE", GELO = "FROST",
     ARCANO = "ARCANE", ASSASSINATO = "ASSASSINATION", SUTILEZA = "SUBTLETY",
-    SANGUE = "BLOOD", PROFANO = "UNHOLY", EQUILÍBRIO = "BALANCE", SELVAGEM = "FERAL",
+    SANGUE = "BLOOD", PROFANO = "UNHOLY", EQUILIBRIO = "BALANCE", SELVAGEM = "FERAL",
     GUARDIAO = "GUARDIAN", ELEMENTAL_ = "ELEMENTAL", APRIMORAMENTO = "ENHANCEMENT",
     DESTRUICAO = "DESTRUCTION", DEMONOLOGIA = "DEMONOLOGY", AFLICAO = "AFFLICTION",
     ANDARILHODOVENTO = "WINDWALKER", CERVEJEIRO = "BREWMASTER", TECENEBRINA = "MISTWEAVER",

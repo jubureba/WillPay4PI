@@ -2,7 +2,7 @@ local addonName, ns = ...
 local PA = ns.PA
 local L  = ns.L
 
--- ─── Profile Helpers ─────────────────────────────────────────────────────────
+-- --- Profile Helpers ---------------------------------------------------------
 -- AceDB-3.0 handles most profile logic; these methods provide the UI bridge
 -- and export/import functionality on top of it.
 
@@ -54,7 +54,7 @@ function PA:DuplicateProfile(sourceName)
     return newName
 end
 
--- ─── Export / Import ─────────────────────────────────────────────────────────
+-- --- Export / Import ---------------------------------------------------------
 
 -- Serializes the current profile data to a base64-encoded string.
 -- Uses AceSerializer if available, otherwise a simple table-to-string approach.
@@ -95,7 +95,7 @@ function PA:ImportProfile(data)
     return false, "AceSerializer-3.0 required for import/export"
 end
 
--- ─── Simple Base64 ───────────────────────────────────────────────────────────
+-- --- Simple Base64 -----------------------------------------------------------
 -- Minimal implementation for profile export portability.
 
 local b64chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"

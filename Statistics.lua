@@ -4,7 +4,7 @@ local L  = ns.L
 
 local MAX_HISTORY = 200
 
--- ─── Initialization ───────────────────────────────────────────────────────────
+-- --- Initialization -----------------------------------------------------------
 
 function PA:InitializeStatistics()
     -- Stats are stored in db.profile.statistics (persisted)
@@ -26,7 +26,7 @@ function PA:InitializeStatistics()
     self.pendingBurstTime = nil  -- time of last burst, for response time calc
 end
 
--- ─── Recording ────────────────────────────────────────────────────────────────
+-- --- Recording ----------------------------------------------------------------
 
 function PA:RecordBurstDetected()
     local s = self.db.profile.statistics
@@ -94,7 +94,7 @@ function PA:AddToHistory(entry)
     end
 end
 
--- ─── Accessors ────────────────────────────────────────────────────────────────
+-- --- Accessors ----------------------------------------------------------------
 
 function PA:GetStatistics()
     local s   = self.db.profile.statistics
@@ -149,7 +149,7 @@ function PA:GetPriestStats()
     return stats
 end
 
--- ─── Reset ───────────────────────────────────────────────────────────────────
+-- --- Reset -------------------------------------------------------------------
 
 function PA:ResetStatistics()
     local s = self.db.profile.statistics
@@ -170,7 +170,7 @@ function PA:ResetStatistics()
     self:Print("Statistics reset.")
 end
 
--- ─── Format Helpers ───────────────────────────────────────────────────────────
+-- --- Format Helpers -----------------------------------------------------------
 
 -- Formats a timestamp as "YYYY-MM-DD HH:MM:SS"
 function PA:FormatTimestamp(ts)

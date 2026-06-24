@@ -7,9 +7,9 @@ _G["WillPay4PI"] = PA
 
 local L = ns.L
 
-PA.version = "1.2.0"
+PA.version = "1.3.0"
 
--- ─── Default Database ─────────────────────────────────────────────────────────
+-- --- Default Database ---------------------------------------------------------
 
 PA.defaults = {
     profile = {
@@ -38,6 +38,7 @@ PA.defaults = {
             posY     = 200,
             duration = 2.5,
             soundFile = "",
+            audioChannel = "Master",
         },
 
         burst = {
@@ -75,7 +76,7 @@ PA.defaults = {
     }
 }
 
--- ─── Lifecycle ────────────────────────────────────────────────────────────────
+-- --- Lifecycle ----------------------------------------------------------------
 
 function PA:OnInitialize()
     self.db = LibStub("AceDB-3.0"):New("WillPay4PIDB", self.defaults, true)
@@ -126,7 +127,7 @@ function PA:OnProfileChanged()
     end
 end
 
--- ─── Slash Command ────────────────────────────────────────────────────────────
+-- --- Slash Command ------------------------------------------------------------
 
 function PA:SlashCommand(input)
     input = input and input:match("^%s*(.-)%s*$") or ""
@@ -185,7 +186,7 @@ end
 -- Kept here so /pi snoop continues to work via SlashCommand.
 -- The actual implementation is PA:StartCLEUSnoop() in Events.lua.
 
--- ─── Enable / Disable Toggle ─────────────────────────────────────────────────
+-- --- Enable / Disable Toggle -------------------------------------------------
 
 function PA:IsAddonEnabled()
     return self.db.profile.enabled
@@ -203,7 +204,7 @@ function PA:ToggleAddon()
     end
 end
 
--- ─── Minimap Icon ─────────────────────────────────────────────────────────────
+-- --- Minimap Icon -------------------------------------------------------------
 
 function PA:InitializeMinimapIcon()
     local LDB     = LibStub("LibDataBroker-1.1")
@@ -233,7 +234,7 @@ function PA:InitializeMinimapIcon()
     LDBIcon:Register(addonName, self.dataObject, self.db.profile.minimapIcon)
 end
 
--- ─── Minimap Context Menu ─────────────────────────────────────────────────────
+-- --- Minimap Context Menu -----------------------------------------------------
 
 function PA:ShowMinimapMenu()
     -- EasyMenu / UIDropDownMenuTemplate were removed in TWW/Midnight.
@@ -269,7 +270,7 @@ function PA:ShowMinimapMenu()
     end
 end
 
--- ─── WeakAuras Event Bridge ───────────────────────────────────────────────────
+-- --- WeakAuras Event Bridge ---------------------------------------------------
 
 function PA:FireWeakAuraEvent(event, ...)
     if WeakAuras and WeakAuras.ScanEvents then
@@ -277,7 +278,7 @@ function PA:FireWeakAuraEvent(event, ...)
     end
 end
 
--- ─── Utility ─────────────────────────────────────────────────────────────────
+-- --- Utility -----------------------------------------------------------------
 
 -- Returns "Name-Realm" key for a unit, or just "Name" if same realm.
 -- In Midnight 12.x, UnitName() can return "secret" values for certain units

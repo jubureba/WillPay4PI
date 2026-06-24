@@ -4,7 +4,7 @@ local L  = ns.L
 
 local MAX_LOG_ENTRIES = 500
 
--- ─── Initialization ───────────────────────────────────────────────────────────
+-- --- Initialization -----------------------------------------------------------
 
 function PA:InitializeDebug()
     self.debugLog     = {}
@@ -12,7 +12,7 @@ function PA:InitializeDebug()
     self.debugVisible = false
 end
 
--- ─── Logging ─────────────────────────────────────────────────────────────────
+-- --- Logging -----------------------------------------------------------------
 
 -- Levels: 1=Info, 2=Verbose, 3=Trace
 function PA:DebugLog(level, msg, ...)
@@ -118,7 +118,7 @@ function PA:AppendDebugEntry(entry)
     end
 end
 
--- ─── Debug Window ─────────────────────────────────────────────────────────────
+-- --- Debug Window -------------------------------------------------------------
 
 function PA:ToggleDebugWindow()
     if self.debugFrame and self.debugFrame:IsShown() then

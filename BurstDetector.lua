@@ -2,7 +2,7 @@ local addonName, ns = ...
 local PA = ns.PA
 local L  = ns.L
 
--- ─── Initialization ───────────────────────────────────────────────────────────
+-- --- Initialization -----------------------------------------------------------
 
 function PA:InitializeBurstDetector()
     self.burstSpellCooldowns = {}  -- [spellID] = lastTriggeredTime
@@ -11,7 +11,7 @@ function PA:InitializeBurstDetector()
     self:LoadSpecProfile()
 end
 
--- ─── Spec Profile Loading ─────────────────────────────────────────────────────
+-- --- Spec Profile Loading -----------------------------------------------------
 
 -- Loads (or reloads) the burst spell list from DB for current class/spec.
 -- If no custom spells are saved yet, seeds from ClassProfiles defaults.
@@ -25,7 +25,7 @@ function PA:LoadSpecProfile()
     self.playerSpecID        = specID
     self.playerSpecName      = specNameLocalized  -- localized, display only
 
-    -- ── Resolve profile key (locale-independent) ──────────────────────────
+    -- -- Resolve profile key (locale-independent) --------------------------
     local profileKey = nil
 
     -- 1. Numeric specID → guaranteed locale-independent
@@ -52,14 +52,18 @@ function PA:LoadSpecProfile()
     self:DebugLog(2, "BurstDetector: class=%s specID=%s localName=%s → profileKey=%s",
         tostring(class), tostring(specID), tostring(specNameLocalized), tostring(self.playerSpec))
 
-    -- ── Seed spell list if empty ───────────────────────────────────────────
+    -- -- Seed spell list if empty -------------------------------------------
     local savedSpells = self.db.profile.burst.spells
     if not savedSpells or #savedSpells == 0 then
-        local defaultProfile = ns.GetDefaultClassProfile(class, self.playerSpec)
-        self.db.profile.burst.spells = defaultProfile.spells
+        if ns.GetDefaultClassProfile then
+            local defaultProfile = ns.GetDefaultClassProfile(class, self.playerSpec)
+            self.db.profile.burst.spells = defaultProfile.spells
+        else
+            self.db.profile.burst.spells = {}
+        end
     end
 
-    -- ── Build spellID → config lookup ─────────────────────────────────────
+    -- -- Build spellID → config lookup -------------------------------------
     self.burstSpellMap = {}
     for _, spell in ipairs(self.db.profile.burst.spells) do
         if spell.id and spell.id > 0 then
@@ -73,7 +77,7 @@ function PA:LoadSpecProfile()
         #self.db.profile.burst.spells, tostring(class), tostring(self.playerSpec))
 end
 
--- ─── Spell Event Handler ──────────────────────────────────────────────────────
+-- --- Spell Event Handler ------------------------------------------------------
 
 -- Called by Events.lua for every player spell cast/aura event.
 -- In Midnight 12.x, events come from:
@@ -121,7 +125,7 @@ function PA:OnPlayerSpellEvent(event, spellID, spellName)
     self:OnBurstSpellDetected(spellID, event, spellCfg)
 end
 
--- ─── Burst Trigger ────────────────────────────────────────────────────────────
+-- --- Burst Trigger ------------------------------------------------------------
 
 function PA:OnBurstSpellDetected(spellID, event, spellCfg)
     local spellName = ns.GetSpellName(spellID)
@@ -156,7 +160,7 @@ function PA:OnBurstSpellDetected(spellID, event, spellCfg)
     end
 end
 
--- ─── Burst Window State ───────────────────────────────────────────────────────
+-- --- Burst Window State -------------------------------------------------------
 
 function PA:IsBurstWindowActive()
     return self.burstWindowActive == true
@@ -167,7 +171,7 @@ function PA:ResetBurstState()
     self.currentBurstWeight = 0
 end
 
--- ─── Test Burst ───────────────────────────────────────────────────────────────
+-- --- Test Burst ---------------------------------------------------------------
 
 -- Simulates a burst detection for testing purposes. No real message is sent.
 function PA:TestBurst()
@@ -209,7 +213,7 @@ function PA:TestBurst()
         testSpellName, priestName, channel, formatted)
 end
 
--- ─── Spell List Management ────────────────────────────────────────────────────
+-- --- Spell List Management ----------------------------------------------------
 
 -- Adds a new spell to the burst list. Returns false + reason if invalid.
 function PA:AddBurstSpell(spellID)

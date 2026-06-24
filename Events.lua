@@ -2,7 +2,7 @@ local addonName, ns = ...
 local PA = ns.PA
 local L  = ns.L
 
--- ─── Event Registration ───────────────────────────────────────────────────────
+-- --- Event Registration -------------------------------------------------------
 -- WoW Midnight 12.x blocks COMBAT_LOG_EVENT_UNFILTERED completely.
 -- We now use:
 --   • UNIT_SPELLCAST_SUCCEEDED  → detect player burst casts
@@ -76,7 +76,7 @@ function PA:DispatchEvent(event, ...)
     end
 end
 
--- ─── Burst Detection via UNIT_SPELLCAST_SUCCEEDED ─────────────────────────────
+-- --- Burst Detection via UNIT_SPELLCAST_SUCCEEDED -----------------------------
 -- Fires for: unitTarget, castGUID, spellID
 -- This replaces the old CLEU SPELL_CAST_SUCCESS routing.
 
@@ -98,14 +98,14 @@ function PA:OnUnitSpellcastSucceeded(unit, castGUID, spellID)
     self:OnPlayerSpellEvent("SPELL_CAST_SUCCESS", spellID, ns.GetSpellName(spellID))
 end
 
--- ─── PI Detection via UNIT_AURA ───────────────────────────────────────────────
+-- --- PI Detection via UNIT_AURA -----------------------------------------------
 -- UNIT_AURA fires for: unit, updateInfo (table with addedAuras, updatedAuraInstanceIDs, etc.)
 -- We check for Power Infusion buff on the player using C_UnitAuras.
 
 function PA:OnUnitAura(event, unit, updateInfo)
     if not self:IsAddonEnabled() then return end
 
-    -- ── Player aura changes: detect PI applied/removed ────────────────────
+    -- -- Player aura changes: detect PI applied/removed --------------------
     if unit == "player" then
         self:CheckPlayerForPI(updateInfo)
         return
@@ -116,7 +116,7 @@ function PA:OnUnitAura(event, unit, updateInfo)
         return
     end
 
-    -- ── Group member aura changes: refresh priest status ──────────────────
+    -- -- Group member aura changes: refresh priest status ------------------
     local key = self:GetUnitKey(unit)
     if key and self.priests and self.priests[key] then
         self:UpdatePriestUnit(unit)
@@ -197,7 +197,7 @@ function PA:PlayerHasPI()
     return false
 end
 
--- ─── Snoop Command (updated for new event system) ─────────────────────────────
+-- --- Snoop Command (updated for new event system) -----------------------------
 
 function PA:StartCLEUSnoop()
     self.snoopEndTime = GetTime() + 10
@@ -217,7 +217,7 @@ function PA:StartCLEUSnoop()
     end
 end
 
--- ─── Group / Zone Events ──────────────────────────────────────────────────────
+-- --- Group / Zone Events ------------------------------------------------------
 
 function PA:GROUP_ROSTER_UPDATE()
     self:ScanGroupForPriests()
@@ -245,7 +245,7 @@ function PA:PLAYER_ENTERING_WORLD()
     end
 end
 
--- ─── Unit Events ──────────────────────────────────────────────────────────────
+-- --- Unit Events --------------------------------------------------------------
 
 function PA:OnUnitConnection(event, unit, isConnected)
     local key = self:GetUnitKey(unit)
@@ -272,7 +272,7 @@ function PA:OnUnitHealth(event, unit)
     end
 end
 
--- ─── Spec / Talent Events ─────────────────────────────────────────────────────
+-- --- Spec / Talent Events -----------------------------------------------------
 
 function PA:OnSpecChanged()
     self:LoadSpecProfile()
@@ -288,7 +288,7 @@ function PA:OnTalentUpdate()
     end
 end
 
--- ─── PI Detection Callbacks ───────────────────────────────────────────────────
+-- --- PI Detection Callbacks ---------------------------------------------------
 
 function PA:OnPIReceived(sourceName, timestamp)
     local now = GetTime()

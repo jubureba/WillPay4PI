@@ -2,14 +2,14 @@ local addonName, ns = ...
 local PA = ns.PA
 local L  = ns.L
 
--- ─── Initialization ───────────────────────────────────────────────────────────
+-- --- Initialization -----------------------------------------------------------
 
 function PA:InitializeMessageManager()
     self.lastRequestTime = 0
     self.requestCount    = 0
 end
 
--- ─── Pre-flight Checks ────────────────────────────────────────────────────────
+-- --- Pre-flight Checks --------------------------------------------------------
 
 -- Returns true + nil if the request can be sent, or false + reason string.
 function PA:CanSendMessage()
@@ -42,7 +42,7 @@ function PA:CanSendMessage()
     return true
 end
 
--- ─── Send PI Request ─────────────────────────────────────────────────────────
+-- --- Send PI Request ---------------------------------------------------------
 
 -- Sends the PI request message. manual=true means user triggered it explicitly.
 function PA:SendPIRequest(manual)
@@ -95,7 +95,7 @@ function PA:SendPIRequest(manual)
     end
 end
 
--- ─── Message Delivery ─────────────────────────────────────────────────────────
+-- --- Message Delivery ---------------------------------------------------------
 
 function PA:DeliverMessage(message, channel, priest)
     if not message or message == "" then
@@ -151,7 +151,7 @@ function PA:DeliverMessage(message, channel, priest)
     end
 end
 
--- ─── Message Formatting ───────────────────────────────────────────────────────
+-- --- Message Formatting -------------------------------------------------------
 
 -- Available variables: {player} {spec} {class} {priest} {instance} {group} {time}
 function PA:FormatMessage(template, extra)
@@ -191,7 +191,7 @@ function PA:FormatMessage(template, extra)
     return result
 end
 
--- ─── Cooldown Info ────────────────────────────────────────────────────────────
+-- --- Cooldown Info ------------------------------------------------------------
 
 function PA:GetCooldownRemaining()
     local cooldown = self.db.profile.message.cooldown or 90
@@ -208,7 +208,7 @@ function PA:ResetMessageCooldown()
     self:DebugLog(2, "Message cooldown reset")
 end
 
--- ─── Alert Sound ─────────────────────────────────────────────────────────────
+-- --- Alert Sound -------------------------------------------------------------
 
 -- Built-in sound presets (using WoW SOUNDKIT IDs that always work)
 ns.ALERT_SOUNDS = {
@@ -229,13 +229,14 @@ function PA:PlayAlertSound()
     local cfg = self.db.profile.alert
     if not cfg.sound then return end
 
+    local channel = cfg.audioChannel or "Master"
     local file = cfg.soundFile
 
     -- Custom .ogg file path
     if file and file ~= "" and file:find("\\") then
-        local ok = pcall(PlaySoundFile, file, "Master")
+        local ok = pcall(PlaySoundFile, file, channel)
         if not ok then
-            PlaySound(SOUNDKIT.RAID_WARNING, "Master")
+            PlaySound(SOUNDKIT.RAID_WARNING, channel)
         end
         return
     end
@@ -246,7 +247,7 @@ function PA:PlayAlertSound()
             if preset.id == file then
                 local sk = SOUNDKIT[preset.soundkit]
                 if sk then
-                    PlaySound(sk, "Master")
+                    PlaySound(sk, channel)
                     return
                 end
             end
@@ -254,5 +255,5 @@ function PA:PlayAlertSound()
     end
 
     -- Default fallback
-    PlaySound(SOUNDKIT.RAID_WARNING, "Master")
+    PlaySound(SOUNDKIT.RAID_WARNING, channel)
 end

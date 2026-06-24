@@ -2,7 +2,7 @@ local addonName, ns = ...
 local PA = ns.PA
 local L  = ns.L
 
--- ─── Registration ─────────────────────────────────────────────────────────────
+-- --- Registration -------------------------------------------------------------
 
 function PA:RegisterOptions()
     local AceConfig       = LibStub("AceConfig-3.0")
@@ -27,7 +27,7 @@ function PA:RefreshOptions()
     LibStub("AceConfigRegistry-3.0"):NotifyChange(addonName)
 end
 
--- ─── Options Table ────────────────────────────────────────────────────────────
+-- --- Options Table ------------------------------------------------------------
 
 function PA:GetOptionsTable()
     return {
@@ -36,7 +36,7 @@ function PA:GetOptionsTable()
         type    = "group",
         args    = {
 
-            -- ── General ──────────────────────────────────────────────────────
+            -- -- General ------------------------------------------------------
             general = {
                 name  = "General",
                 type  = "group",
@@ -79,7 +79,7 @@ function PA:GetOptionsTable()
                 },
             },
 
-            -- ── Burst Detection ───────────────────────────────────────────────
+            -- -- Burst Detection -----------------------------------------------
             burst = {
                 name  = "Burst Detection",
                 type  = "group",
@@ -168,7 +168,7 @@ function PA:GetOptionsTable()
                 },
             },
 
-            -- ── Messages ──────────────────────────────────────────────────────
+            -- -- Messages ------------------------------------------------------
             messages = {
                 name  = L["TAB_MESSAGES"],
                 type  = "group",
@@ -239,7 +239,7 @@ function PA:GetOptionsTable()
                 },
             },
 
-            -- ── Alerts ────────────────────────────────────────────────────────
+            -- -- Alerts --------------------------------------------------------
             alerts = {
                 name  = "Alerts",
                 type  = "group",
@@ -396,7 +396,7 @@ function PA:GetOptionsTable()
                 },
             },
 
-            -- ── Debug ─────────────────────────────────────────────────────────
+            -- -- Debug ---------------------------------------------------------
             debug = {
                 name  = "Debug",
                 type  = "group",
