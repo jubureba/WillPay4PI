@@ -1,8 +1,8 @@
-## Interface: 120005
+## Interface: 120007
 ## Title: |cffaa55ffWill Pay 4 PI|r
 ## Notes: Detects burst windows and requests Power Infusion. Will trade gold, dignity, or both.
 ## Author:
-## Version: 1.1.0
+## Version: 1.2.0
 ## SavedVariables: WillPay4PIDB
 ## X-Category: Combat
 

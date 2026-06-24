@@ -330,12 +330,42 @@ function PA:GetOptionsTable()
                         set   = function(_, v) PA.db.profile.alert.volume = v end,
                     },
                     soundFile = {
-                        name  = "Custom Sound File",
-                        desc  = "Path to a custom .ogg sound file (relative to WoW folder). Leave empty to use the default Raid Warning sound.\n\nExample: Interface\\AddOns\\PIAssistant\\Media\\Sounds\\ping.ogg",
-                        type  = "input",
+                        name  = "Alert Sound",
+                        desc  = "Choose a built-in sound preset, or enter a custom .ogg file path.\n\nCustom path example: Interface\\AddOns\\PIAssistant\\Media\\Sounds\\ping.ogg",
+                        type  = "select",
                         order = 23,
+                        values = function()
+                            local v = { [""] = "Default (Raid Warning)" }
+                            for _, preset in ipairs(ns.ALERT_SOUNDS) do
+                                v[preset.id] = preset.name
+                            end
+                            v["CUSTOM"] = "-- Custom File Path --"
+                            return v
+                        end,
+                        get   = function()
+                            local f = PA.db.profile.alert.soundFile or ""
+                            if f == "" then return "" end
+                            if f:find("\\") then return "CUSTOM" end
+                            return f
+                        end,
+                        set   = function(_, v)
+                            if v == "CUSTOM" then
+                                -- Don't change; user needs to type path in the input below
+                            else
+                                PA.db.profile.alert.soundFile = v
+                            end
+                        end,
+                    },
+                    soundFilePath = {
+                        name  = "Custom Sound Path",
+                        desc  = "Full path to a custom .ogg sound file. Only used when 'Custom File Path' is selected above.",
+                        type  = "input",
+                        order = 24,
                         width = "full",
-                        get   = function() return PA.db.profile.alert.soundFile or "" end,
+                        get   = function()
+                            local f = PA.db.profile.alert.soundFile or ""
+                            return f:find("\\") and f or ""
+                        end,
                         set   = function(_, v)
                             PA.db.profile.alert.soundFile = (v and v ~= "") and v or ""
                         end,

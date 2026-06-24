@@ -352,6 +352,7 @@ function PA:CreateMainWindow()
         if not PA.mainFrame or not PA.mainFrame:IsShown() then return end
         if PA.activeTab == TAB_DASHBOARD  then PA:RefreshDashboard()  end
         if PA.activeTab == TAB_STATISTICS then PA:RefreshStatsTab()   end
+        if PA.activeTab == TAB_MESSAGES   then PA:RefreshMessagesTab() end
     end)
 end
 

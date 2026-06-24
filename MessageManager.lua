@@ -194,7 +194,7 @@ end
 -- ─── Cooldown Info ────────────────────────────────────────────────────────────
 
 function PA:GetCooldownRemaining()
-    local cooldown = self.db.profile.message.cooldown or 30
+    local cooldown = self.db.profile.message.cooldown or 90
     local elapsed  = GetTime() - (self.lastRequestTime or 0)
     return math.max(0, cooldown - elapsed)
 end
@@ -210,20 +210,49 @@ end
 
 -- ─── Alert Sound ─────────────────────────────────────────────────────────────
 
+-- Built-in sound presets (using WoW SOUNDKIT IDs that always work)
+ns.ALERT_SOUNDS = {
+    { id = "RAID_WARNING",    name = "Raid Warning",       soundkit = "RAID_WARNING" },
+    { id = "READY_CHECK",     name = "Ready Check",        soundkit = "READY_CHECK" },
+    { id = "PVP_FLAG",        name = "PvP Flag Captured",  soundkit = "PVP_THROUGH_QUEUE" },
+    { id = "ALARM1",          name = "Alarm Clock 1",      soundkit = "ALARM_CLOCK_WARNING_1" },
+    { id = "ALARM2",          name = "Alarm Clock 2",      soundkit = "ALARM_CLOCK_WARNING_2" },
+    { id = "ALARM3",          name = "Alarm Clock 3",      soundkit = "ALARM_CLOCK_WARNING_3" },
+    { id = "LEVELUP",         name = "Level Up",           soundkit = "LEVEL_UP" },
+    { id = "LOOT_EPIC",       name = "Epic Loot",          soundkit = "UI_EPICLOOT_TOAST" },
+    { id = "LOOT_RARE",       name = "Rare Loot",          soundkit = "UI_RARELOOT_TOAST" },
+    { id = "QUEST_COMPLETE",  name = "Quest Complete",     soundkit = "QUEST_COMPLETED" },
+    { id = "PET_BATTLE_WIN",  name = "Victory Fanfare",    soundkit = "UI_PET_BATTLES_TRAP_READY" },
+}
+
 function PA:PlayAlertSound()
     local cfg = self.db.profile.alert
     if not cfg.sound then return end
 
-    local vol   = cfg.volume or 0.7
-    local file  = cfg.soundFile
-    local useCustom = file and file ~= ""
+    local file = cfg.soundFile
 
-    if useCustom then
+    -- Custom .ogg file path
+    if file and file ~= "" and file:find("\\") then
         local ok = pcall(PlaySoundFile, file, "Master")
         if not ok then
             PlaySound(SOUNDKIT.RAID_WARNING, "Master")
         end
-    else
-        PlaySound(SOUNDKIT.RAID_WARNING, "Master")
+        return
     end
+
+    -- Built-in preset by ID
+    if file and file ~= "" then
+        for _, preset in ipairs(ns.ALERT_SOUNDS) do
+            if preset.id == file then
+                local sk = SOUNDKIT[preset.soundkit]
+                if sk then
+                    PlaySound(sk, "Master")
+                    return
+                end
+            end
+        end
+    end
+
+    -- Default fallback
+    PlaySound(SOUNDKIT.RAID_WARNING, "Master")
 end
